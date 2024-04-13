@@ -1,3 +1,8 @@
+# Local
+local_data/*
+*.shelve.*
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -1,0 +1,70 @@
+# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
+select = [
+  "A",  # flake8-builtins (A)
+  "ANN",  # flake8-annotations (ANN)
+  "ARG",  # flake8-unused-arguments (ARG)
+  "C4",  # flake8-comprehensions (C4)
+  "COM",  # flake8-commas (COM)
+  "D417",  # pydocstyle (D)
+  "E",  # pycodestyle (E, W)
+  "ERA",  # eradicate (ERA)
+  "F",  # Pyflakes (F)
+  "I",  # isort (I)
+  "ICN",  # flake8-import-conventions (ICN)
+  "NPY001",  # NumPy-specific rules (NPY)
+  "PD002",  # pandas-vet (PD)
+  "PIE",  # flake8-pie (PIE)
+  "PLE",  # pylint
+  "PLW",  # Pylint
+  "PT",  # flake8-pytest-style (PT)
+  "UP",  # pyupgrade (UP)
+  "Q",  # flake8-quotes (Q)
+  "PTH",  # flake8-use-pathlib (PTH)
+  "RSE",  # flake8-raise (RSE)
+  "RET",  # flake8-return (RET)
+  "RUF",  # Ruff-specific rules (RUF)
+  "SIM",  # flake8-simplify (SIM)
+  "W",  # pycodestyle (E, W)
+]
+ignore = ["ANN101", "ANN401", "E402", "E501", "F401", "F841", "RET504"]
+ignore-init-module-imports = true
+# Allow autofix for all enabled rules (when `--fix`) is provided.
+unfixable = ["ERA"]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+  ".bzr",
+  ".direnv",
+  ".eggs",
+  ".git",
+  ".hg",
+  ".nox",
+  ".pants.d",
+  ".pytype",
+  ".ruff_cache",
+  ".svn",
+  ".tox",
+  ".venv",
+  "__pypackages__",
+  "_build",
+  "buck-out",
+  "build",
+  "dist",
+  "node_modules",
+  "venv",
+  "__init__.py",
+  "docs/conf.py",
+]
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+target-version = "py39"
+
+[flake8-annotations]
+mypy-init-return = true
+suppress-none-returning = true
+
+[isort]
+known-third-party = ["wandb"]
+
+[mccabe]
+# Unlike Flake8, default to a complexity level of 10.
+max-complexity = 10
