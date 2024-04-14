@@ -1,3 +1,4 @@
+import argparse
 import bz2
 import json
 import re
@@ -52,24 +53,32 @@ def clean_text_generic(text: str, start_str: str, end_str: str) -> str:
     return cleaned_text.strip()
 
 
-def clean_text(text: str) -> str:
+def clean_text(text: str, config: dict | None = None) -> str:
     """
     Cleans the article text by removing bracketed file references that start with 'Fil:'.
 
     Args:
         text (str): The raw text from the Wikimedia article.
+        config (dict): A dictionary with file and infobox strings. Defaults to None.
 
     Returns:
         str: The cleaned text.
     """
-    cleaned = clean_text_generic(text, "[[Fil:", "]]")
-    cleaned = clean_text_generic(cleaned, "{{Infoboks:", "}}")
+    file = config["file"] if config else "Fil"
+    infobox = config["infobox"] if config else "Infoboks"
+    cleaned = clean_text_generic(text, f"[[{file}:", "]]")
+    cleaned = clean_text_generic(
+        cleaned,
+        "{{Infoboks:".replace("Infoboks", infobox),
+        "}}",
+    )
     return cleaned
 
 
 def extract_articles(
     file_path: Path,
     num_articles: int = 1,
+    config: dict[str, str] | None = None,
 ) -> dict[str, tuple[str, list[str]]]:
     """
     Extracts articles from a bz2-compressed Wikimedia XML dump.
@@ -77,6 +86,7 @@ def extract_articles(
     Args:
         file_path (Path): The path to the bz2-compressed XML file.
         num_articles (int): The number of articles to extract. Defaults to 1.
+        config (dict[str, str]): A dictionary with start and end strings for unwanted sections. Defaults to None.
 
     Returns:
         dict[str, tuple[str, list[str]]]: A dictionary with titles as keys and a tuple of cleaned text and categories.
@@ -109,12 +119,15 @@ def extract_articles(
                 raw_text = text_elem.text or ""
 
                 # Clean the text
-                cleaned_text = clean_text(raw_text)
+                cleaned_text = clean_text(raw_text, config=config)
                 # only save until the first "\n\n"
                 cleaned_text = cleaned_text.split("\n\n")[0]
 
                 # Extract categories, assuming categories are mentioned as links or in a specific section
-                categories = re.findall(r"\[\[Kategori:(.*?)\]\]", raw_text)
+                categories = re.findall(
+                    rf"\[\[{config['category']}:(.*?)\]\]",
+                    raw_text,
+                )
 
                 articles[title] = (cleaned_text, categories)
                 article_count += 1
@@ -123,14 +136,40 @@ def extract_articles(
     return articles
 
 
-if __name__ == "__main__":
-    N = 300_000
-    path_to_file = Path("local_data/dawiki-20240401-pages-articles.xml.bz2")
-    articles = extract_articles(path_to_file, num_articles=N)
+def read_json(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def main(args: argparse.Namespace):
+    N = args.num_articles
+    config = read_json(args.config_path)
+    path_to_file = Path(
+        f"local_data/{config['prefix']}wiki-20240401-pages-articles.xml.bz2",
+    )
+    articles = extract_articles(path_to_file, num_articles=N, config=config)
     SAVE_PATH = Path(
-        f"local_data/dawiki-sample-{N}-{datetime.now().strftime('%Y%m%d%H%M%S')}.json",
+        f"local_data/{config['prefix']}wiki-sample-{N}-{datetime.now().strftime('%Y%m%d%H%M%S')}.json",
     )
     SAVE_PATH.write_text(
         json.dumps(articles, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Extract articles from a Wikimedia XML dump.",
+    )
+    parser.add_argument(
+        "--num_articles",
+        type=int,
+        default=1,
+        help="The number of articles to extract. Defaults to 1.",
+    )
+    parser.add_argument(
+        "--config-path",
+        type=Path,
+        default=Path("da-config.json"),
+    )
+    args = parser.parse_args()
+    main(args)
