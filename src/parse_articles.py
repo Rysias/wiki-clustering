@@ -7,6 +7,8 @@ from pathlib import Path
 
 from lxml import etree
 
+import src.fileio as fileio
+
 
 def clean_text_generic(text: str, start_str: str, end_str: str) -> str:
     """
@@ -136,15 +138,14 @@ def extract_articles(
     return articles
 
 
-def read_json(path: Path) -> dict:
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
 def main(args: argparse.Namespace):
     N = args.num_articles
-    config = read_json(args.config_path)
-    path_to_file = Path(
-        f"local_data/{config['prefix']}wiki-20240401-pages-articles.xml.bz2",
+    CONFIG_PATH = args.config_path
+    assert CONFIG_PATH.exists(), f"Config file not found at {CONFIG_PATH}"
+    config = fileio.read_json(args.config_path)
+    path_to_file = fileio.find_latest_file(
+        Path("local_data"),
+        f"{config['prefix']}wiki-*-pages-articles.xml.bz2",
     )
     articles = extract_articles(path_to_file, num_articles=N, config=config)
     SAVE_PATH = Path(
@@ -161,7 +162,7 @@ if __name__ == "__main__":
         description="Extract articles from a Wikimedia XML dump.",
     )
     parser.add_argument(
-        "--num_articles",
+        "--num-articles",
         type=int,
         default=1,
         help="The number of articles to extract. Defaults to 1.",

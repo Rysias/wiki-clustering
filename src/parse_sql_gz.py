@@ -1,9 +1,22 @@
+import argparse
 import gzip
 from collections.abc import Generator
 from pathlib import Path
 
 import pandas as pd
 from tqdm import tqdm
+
+import src.fileio as fileio
+
+CATEGORYLINKS_COLS = [
+    "cl_from",
+    "cl_to",
+    "cl_sortkey",
+    "cl_timestamp",
+    "cl_sortkey_prefix",
+    "cl_collation",
+    "cl_type",
+]
 
 
 def read_sql_gz(file_path: Path) -> Generator[str]:
@@ -65,54 +78,45 @@ def parse_sql_inserts(sql_content: str) -> list[tuple]:
     return records
 
 
-if __name__ == "__main__":
-    path_to_file = Path("local_data/dawiki-latest-category.sql.gz")
-    sql_content = read_sql_gz(path_to_file)
-    all_records = []
-    for line in tqdm(sql_content):
-        records = parse_sql_inserts(line)
-        print(f"found {len(records) if records else 0} records")
-        all_records.extend(records)
-    col_names = ["cat_id", "cat_title", "cat_pages", "cat_subcats", "cat_files"]
-    real_recors = [record for record in all_records if len(record) == len(col_names)]
-    df = pd.DataFrame(real_recors, columns=col_names)
-
-    df.to_csv("local_data/dawiki-latest-category.csv", index=False)
-
-    new_path = Path("local_data/dawiki-latest-categorylinks.sql.gz")
-    new_sql_content = read_sql_gz(new_path)
+def read_inserts(path: Path) -> list[tuple]:
+    new_sql_content = read_sql_gz(path)
     all_new_records = []
     for line in tqdm(new_sql_content):
         new_records = parse_sql_inserts(line)
         all_new_records.extend(new_records)
+    return all_new_records
 
-    new_columns = [
-        "cl_from",
-        "cl_to",
-        "cl_sortkey",
-        "cl_timestamp",
-        "cl_sortkey_prefix",
-        "cl_collation",
-        "cl_type",
-    ]
-    new_real_records = [
-        record for record in all_new_records if len(record) == len(new_columns)
-    ]
 
-    new_df = pd.DataFrame(new_real_records, columns=new_columns)
+def main(args: argparse.Namespace):
+    config = fileio.read_json(args.config_path)
+    new_path = Path(f"local_data/{config['prefix']}wiki-latest-categorylinks.sql.gz")
+    new_real_records = read_inserts(new_path)
+
+    new_df = pd.DataFrame(new_real_records, columns=CATEGORYLINKS_COLS)
     new_df.loc[new_df["cl_type"] == "'subcat'", ["cl_from", "cl_to"]].to_csv(
-        "local_data/dawiki-latest-categorylinks.csv",
+        f"local_data/{config['prefix']}wiki-latest-categorylinks.csv",
         index=False,
     )
 
-    pagepath = Path("local_data/dawiki-latest-page.sql.gz")
-    pages = []
-    for line in tqdm(read_sql_gz(pagepath)):
-        records = parse_sql_inserts(line)
-        pages.extend(records)
+    pagepath = Path(f"local_data/{config['prefix']}wiki-latest-page.sql.gz")
+    pages = read_inserts(pagepath)
 
     CATEGORYSPACE = "14"
     columns = ["cat_id", "cat_title"]
     cats = [(record[0], record[2]) for record in pages if record[1] == CATEGORYSPACE]
     catdf = pd.DataFrame(cats, columns=columns)
-    catdf.to_csv("local_data/dawiki-category-ids.csv", index=False)
+    catdf.to_csv(f"local_data/{config['prefix']}wiki-category-ids.csv", index=False)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Parse SQL GZ files to extract category links and pages",
+    )
+    parser.add_argument(
+        "--config-path",
+        type=Path,
+        default=Path("da-config.json"),
+    )
+    args = parser.parse_args()
+
+    main(args)

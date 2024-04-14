@@ -1,5 +1,10 @@
+import argparse
+from pathlib import Path
+
 import pandas as pd
 from tqdm import tqdm
+
+import src.fileio as fileio
 
 
 def get_all_parents(
@@ -26,17 +31,28 @@ def get_all_parents(
     return all_parents
 
 
-if __name__ == "__main__":
-    ids = pd.read_csv("local_data/dawiki-category-ids.csv")
-    links = pd.read_csv("local_data/dawiki-latest-categorylinks.csv")
-    BAD_CATEGORIES = ["'Skjulte_kategorier'"]
-    ids = ids[~ids["cat_title"].isin(BAD_CATEGORIES)]
-    links = links[~links["cl_to"].isin(BAD_CATEGORIES)]
-
+def main(args: argparse.Namespace):
+    config = fileio.read_json(args.config_path)
+    prefix = config["prefix"]
+    ids = pd.read_csv(f"local_data/{prefix}wiki-category-ids.csv")
+    links = pd.read_csv(f"local_data/{prefix}wiki-latest-categorylinks.csv")
     joined = links.merge(ids, left_on="cl_from", right_on="cat_id").rename(
         columns={"cat_title": "child", "cl_to": "parent"},
     )[["child", "parent"]]
-    top_level = joined.loc[joined["parent"] == "'Topniveau_for_emner'", "child"].values
+    top_level = joined.loc[joined["parent"] == config["top-level"], "child"].values
 
     all_parents = get_all_parents(joined, top_level)
-    all_parents.to_csv("local_data/dawiki-all-parents.csv", index=False)
+    all_parents.to_csv(f"local_data/{prefix}wiki-all-parents.csv", index=False)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Join categories with their parents.",
+    )
+    parser.add_argument(
+        "--config-path",
+        type=Path,
+        default=Path("da-config.json"),
+    )
+    args = parser.parse_args()
+    main(args=args)

@@ -1,19 +1,11 @@
-import json
+import argparse
 from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
 from tqdm import tqdm
 
-
-def read_json(file_path: Path) -> dict:
-    return json.loads(file_path.read_text(encoding="utf-8"))
-
-
-def get_latest_file(directory: Path, pattern: str) -> Path:
-    """Get the latest file in a directory that matches the given pattern."""
-    files = directory.glob(pattern)
-    return max(files, key=lambda f: f.stat().st_mtime)
+import src.fileio as fileio
 
 
 def misinterpret(text: str, false_encoding: str = "latin1") -> str:
@@ -72,20 +64,30 @@ def filter_cats(clean_cats: pd.DataFrame, max_cats: int = 1) -> pd.DataFrame:
     ]
 
 
-def main():
-    parents = clean_parents(pd.read_csv("local_data/dawiki-all-parents.csv"))
-    dawiki = read_json(
-        get_latest_file(Path("local_data"), "dawiki-sample-300000-*.json"),
+def main(args: argparse.Namespace):
+    prefix = fileio.read_json(args.config_path)["prefix"]
+    parents = clean_parents(pd.read_csv(f"local_data/{prefix}wiki-all-parents.csv"))
+    wiki = fileio.read_json(
+        fileio.find_latest_file(Path("local_data"), f"{prefix}wiki-sample-*.json"),
     )
-    catdf = get_categories(dawiki)
+    catdf = get_categories(wiki)
     clean_cats = catdf.merge(parents, left_on="categories", right_on="child")[
         ["index", "parent"]
     ].rename(columns={"index": "title", "parent": "category"})
-    sample_df = generate_samples(dawiki, clean_cats)
+    sample_df = generate_samples(wiki, clean_cats)
 
     current_time = datetime.now().strftime("%Y%m%d%H%M%S")
-    sample_df.to_csv(f"local_data/dawiki-samples-{current_time}.csv")
+    sample_df.to_csv(f"local_data/{prefix}wiki-samples-{current_time}.csv")
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        description="Generate sentence/label samples from a wikipedia pipeline",
+    )
+    parser.add_argument(
+        "--config-path",
+        type=Path,
+        default=Path("da-config.json"),
+    )
+    args = parser.parse_args()
+    main(args=args)
