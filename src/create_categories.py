@@ -1,5 +1,5 @@
 import argparse
-from datetime import datetime
+import gzip
 from pathlib import Path
 
 import pandas as pd
@@ -22,6 +22,25 @@ def clean_parents(df: pd.DataFrame) -> pd.DataFrame:
     dfcopy["parent"] = dfcopy["parent"].str.replace("'", "")
     dfcopy["child"] = dfcopy["child"].str.replace("'", "")
     return dfcopy
+
+
+def save_as_gzipped_jsonl(df: pd.DataFrame, prefix: str):
+    # Create a subfolder in local_data with the name {prefix}
+    path = Path("local_data") / prefix
+    path.mkdir(parents=True, exist_ok=True)
+
+    # Save DataFrame as JSON Lines
+    df.to_json(path / "test.jsonl", orient="records", lines=True)
+
+    # Gzip the JSON Lines file
+    with (path / "test.jsonl").open("rb") as f_in, gzip.open(
+        path / "test.jsonl.gz",
+        "wb",
+    ) as f_out:
+        f_out.writelines(f_in)
+
+    # Remove the original JSON Lines file
+    (path / "test.jsonl").unlink()
 
 
 def generate_samples(
@@ -76,8 +95,7 @@ def main(args: argparse.Namespace):
     ].rename(columns={"index": "title", "parent": "category"})
     sample_df = generate_samples(wiki, clean_cats)
 
-    current_time = datetime.now().strftime("%Y%m%d%H%M%S")
-    sample_df.to_csv(f"local_data/{prefix}wiki-samples-{current_time}.csv")
+    save_as_gzipped_jsonl(sample_df, prefix)
 
 
 if __name__ == "__main__":

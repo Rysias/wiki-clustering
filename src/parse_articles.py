@@ -71,7 +71,7 @@ def clean_text(text: str, config: dict | None = None) -> str:
     cleaned = clean_text_generic(text, f"[[{file}:", "]]")
     cleaned = clean_text_generic(
         cleaned,
-        "{{Infoboks:".replace("Infoboks", infobox),
+        "{{Infoboks".replace("Infoboks", infobox),
         "}}",
     )
     return cleaned

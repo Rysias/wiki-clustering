@@ -1,5 +1,19 @@
+import gzip
 import json
 from pathlib import Path
+
+import pandas as pd
+
+
+def read_gzipped_jsonl(prefix: str) -> pd.DataFrame:
+    # Define the path to the gzipped JSON Lines file
+    path = Path("local_data") / prefix / "test.jsonl.gz"
+
+    # Open the gzipped JSON Lines file and read it into a DataFrame
+    with gzip.open(path, "rb") as f:
+        df = pd.read_json(f, lines=True)
+
+    return df
 
 
 def read_json(path: Path | str) -> dict:
