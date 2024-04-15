@@ -7,6 +7,8 @@ from tqdm import tqdm
 
 import src.fileio as fileio
 
+LANGUAGES = ["da", "sq", "lv", "gv"]
+
 
 def misinterpret(text: str, false_encoding: str = "latin1") -> str:
     return text.encode("utf-8").decode(false_encoding)
@@ -83,8 +85,7 @@ def filter_cats(clean_cats: pd.DataFrame, max_cats: int = 1) -> pd.DataFrame:
     ]
 
 
-def main(args: argparse.Namespace):
-    prefix = fileio.read_json(args.config_path)["prefix"]
+def create_dataset(prefix: str, n_articles: int = 5000, n_turns: int = 30):
     parents = clean_parents(pd.read_csv(f"local_data/{prefix}wiki-all-parents.csv"))
     wiki = fileio.read_json(
         fileio.find_latest_file(Path("local_data"), f"{prefix}wiki-sample-*.json"),
@@ -93,9 +94,19 @@ def main(args: argparse.Namespace):
     clean_cats = catdf.merge(parents, left_on="categories", right_on="child")[
         ["index", "parent"]
     ].rename(columns={"index": "title", "parent": "category"})
-    sample_df = generate_samples(wiki, clean_cats)
+    sample_df = generate_samples(
+        wiki,
+        clean_cats,
+        n_turns=n_turns,
+        n_articles=n_articles,
+    )
 
     save_as_gzipped_jsonl(sample_df, prefix)
+
+
+def main(args: argparse.Namespace):
+    for prefix in tqdm(args.prefixes, desc="Languages"):
+        create_dataset(prefix, n_articles=args.n_articles)
 
 
 if __name__ == "__main__":
@@ -103,9 +114,14 @@ if __name__ == "__main__":
         description="Generate sentence/label samples from a wikipedia pipeline",
     )
     parser.add_argument(
-        "--config-path",
-        type=Path,
-        default=Path("da-config.json"),
+        "--n-articles",
+        type=int,
+        default=500,
+    )
+    parser.add_argument(
+        "--prefixes",
+        nargs="+",
+        default=LANGUAGES,
     )
     args = parser.parse_args()
     main(args=args)

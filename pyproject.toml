@@ -16,6 +16,7 @@ loguru = "^0.7.2"
 lxml = "^5.2.1"
 tqdm = "^4.66.2"
 requests = "^2.31.0"
+huggingface-hub = "^0.22.2"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.27.1"
