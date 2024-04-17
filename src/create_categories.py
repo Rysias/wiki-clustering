@@ -106,7 +106,7 @@ def create_dataset(prefix: str, n_articles: int = 5000, n_turns: int = 30):
 
 def main(args: argparse.Namespace):
     for prefix in tqdm(args.prefixes, desc="Languages"):
-        create_dataset(prefix, n_articles=args.n_articles)
+        create_dataset(prefix, n_articles=args.n_articles, n_turns=args.n_turns)
 
 
 if __name__ == "__main__":
@@ -116,7 +116,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--n-articles",
         type=int,
-        default=500,
+        default=1024,
+    )
+    parser.add_argument(
+        "--n-turns",
+        type=int,
+        default=10,
     )
     parser.add_argument(
         "--prefixes",

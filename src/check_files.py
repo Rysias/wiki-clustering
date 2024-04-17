@@ -34,9 +34,17 @@ def calculate_avg_character_length(df: pd.DataFrame) -> float:
 
 
 if __name__ == "__main__":
+    total_samples = 0
+    character_lens = []
     for prefix in ["sq", "da", "lv", "gv"]:
         print(f"Reading {prefix}")
         df = fileio.read_gzipped_jsonl(prefix)
         print(df["sentences"][0][0])
-        print(f"Number of samples: {calculate_n_samples(df)}")
-        print(f"Average character length: {calculate_avg_character_length(df)}")
+        n_samples = calculate_n_samples(df)
+        total_samples += n_samples
+        print(f"Number of samples: {n_samples}")
+        avg_char_len = calculate_avg_character_length(df)
+        character_lens.append(avg_char_len)
+        print(f"Average character length: {avg_char_len}")
+    print(f"Total number of samples: {total_samples}")
+    print(f"Total average character length: {np.mean(character_lens)}")
