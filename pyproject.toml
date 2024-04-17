@@ -17,6 +17,7 @@ lxml = "^5.2.1"
 tqdm = "^4.66.2"
 requests = "^2.31.0"
 huggingface-hub = "^0.22.2"
+datasets = "^2.18.0"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.27.1"
