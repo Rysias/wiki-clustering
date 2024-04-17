@@ -3,7 +3,16 @@ from pathlib import Path
 from huggingface_hub import HfApi, login
 
 DATA_DIR = Path("local_data")
+CONFIG_DIR = Path("language_configs")
 PREFIXES = ["da", "sq", "lv", "gv"]
+
+
+def get_prefix(file: Path) -> str:
+    return file.stem.split("-")[0]
+
+
+def get_all_prefixes() -> list[str]:
+    return [get_prefix(conffile) for conffile in CONFIG_DIR.glob("*.json")]
 
 
 def upload_wiki_lang(
@@ -22,7 +31,8 @@ def upload_wiki_lang(
 def main():
     login()
     api = HfApi()
-    for prefix in PREFIXES:
+    for prefix in get_all_prefixes():
+        print(f"Uploading {prefix}")
         upload_wiki_lang(api, prefix=prefix)
 
 
