@@ -28,19 +28,19 @@ class WikiClusteringP2PConfig(datasets.BuilderConfig):
 
 class WikiClusteringP2P(datasets.GeneratorBasedBuilder):
 
-    """The Multilingual Amazon Reviews Corpus"""
+    """Wikipedia Clustering"""
 
     BUILDER_CONFIGS = [
         WikiClusteringP2PConfig(
             name=_ALL_LANGUAGES,
             languages=_LANGUAGES,
-            description="A collection of Amazon reviews specifically designed to aid research in multilingual text classification.",
+            description="A collection of wikipedia paragraphs and category labels to aid in multilingual clustering evaluation.",
         ),
     ] + [
         WikiClusteringP2PConfig(
             name=lang,
             languages=[lang],
-            description=f"{_LANGUAGES[lang]} examples from a collection of Amazon reviews specifically designed to aid research in multilingual text classification",
+            description=f"{_LANGUAGES[lang]} articles/labels for wikipedia articles",
         )
         for lang in _LANGUAGES
     ]
