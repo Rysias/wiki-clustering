@@ -8,6 +8,7 @@ from pathlib import Path
 from lxml import etree
 
 import src.fileio as fileio
+from src.config import Config
 
 
 def clean_text_generic(text: str, start_str: str, end_str: str) -> str:
@@ -55,7 +56,7 @@ def clean_text_generic(text: str, start_str: str, end_str: str) -> str:
     return cleaned_text.strip()
 
 
-def clean_text(text: str, config: dict | None = None) -> str:
+def clean_text(text: str, config: Config | None = None) -> str:
     """
     Cleans the article text by removing bracketed file references that start with 'Fil:'.
 
@@ -66,8 +67,8 @@ def clean_text(text: str, config: dict | None = None) -> str:
     Returns:
         str: The cleaned text.
     """
-    file = config["file"] if config else "Fil"
-    infobox = config["infobox"] if config else "Infoboks"
+    file = config.file if config else "Fil"
+    infobox = config.infobox if config else "Infoboks"
     cleaned = clean_text_generic(text, f"[[{file}:", "]]")
     cleaned = clean_text_generic(
         cleaned,
@@ -80,7 +81,7 @@ def clean_text(text: str, config: dict | None = None) -> str:
 def extract_articles(
     file_path: Path,
     num_articles: int = 1,
-    config: dict[str, str] | None = None,
+    config: Config | None = None,
 ) -> dict[str, tuple[str, list[str]]]:
     """
     Extracts articles from a bz2-compressed Wikimedia XML dump.
@@ -109,7 +110,7 @@ def extract_articles(
             title_elem = elem.find(
                 ".//{http://www.mediawiki.org/xml/export-0.10/}title",
             )
-            if title_elem.text is None or title_elem.text.startswith("Kategori:"):
+            if title_elem.text is None or title_elem.text.startswith(config.category):
                 continue
             text_elem = elem.find(".//{http://www.mediawiki.org/xml/export-0.10/}text")
             if text_elem.text is None or "#REDIRECT" in text_elem.text:
@@ -127,7 +128,7 @@ def extract_articles(
 
                 # Extract categories, assuming categories are mentioned as links or in a specific section
                 categories = re.findall(
-                    rf"\[\[{config['category']}:(.*?)\]\]",
+                    rf"\[\[{config.category}:(.*?)\]\]",
                     raw_text,
                 )
 
@@ -142,14 +143,14 @@ def main(args: argparse.Namespace):
     N = args.num_articles
     CONFIG_PATH = args.config_path
     assert CONFIG_PATH.exists(), f"Config file not found at {CONFIG_PATH}"
-    config = fileio.read_json(args.config_path)
+    config: Config = Config.from_json(CONFIG_PATH)
     path_to_file = fileio.find_latest_file(
         Path("local_data"),
-        f"{config['prefix']}wiki-*-pages-articles.xml.bz2",
+        f"{config.prefix}wiki-*-pages-articles.xml.bz2",
     )
     articles = extract_articles(path_to_file, num_articles=N, config=config)
     SAVE_PATH = Path(
-        f"local_data/{config['prefix']}wiki-sample-{N}-{datetime.now().strftime('%Y%m%d%H%M%S')}.json",
+        f"local_data/{config.prefix}wiki-sample-{N}-{datetime.now().strftime('%Y%m%d%H%M%S')}.json",
     )
     SAVE_PATH.write_text(
         json.dumps(articles, ensure_ascii=False, indent=2),
