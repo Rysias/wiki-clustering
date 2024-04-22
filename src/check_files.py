@@ -36,7 +36,7 @@ def calculate_avg_character_length(df: pd.DataFrame) -> float:
 if __name__ == "__main__":
     total_samples = 0
     character_lens = []
-    for prefix in ["sq", "da", "lv", "gv"]:
+    for prefix in fileio.get_all_prefixes():
         print(f"Reading {prefix}")
         df = fileio.read_gzipped_jsonl(prefix)
         print(df["sentences"][0][0])
