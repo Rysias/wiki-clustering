@@ -44,8 +44,8 @@ For convenience, there are two helper scripts for running the pipeline: [`run_fo
 - [ ] ku
 - [ ] sco
 - [ ] mt
-- [ ] bs
-- [ ] ca
+- [c] bs
+- [c] ca
 - [ ] eu
 - [ ] wa
 - [ ] cs
