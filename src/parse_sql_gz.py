@@ -91,24 +91,34 @@ def read_inserts(path: Path) -> list[tuple]:
 def main(args: argparse.Namespace):
     logger.info("Parsing SQL GZ files to extract category links and pages")
     config: Config = Config.from_json(args.config_path)
-    new_path = Path(f"local_data/{config.prefix}wiki-latest-categorylinks.sql.gz")
-    new_real_records = read_inserts(new_path)
-
-    new_df = pd.DataFrame(new_real_records, columns=CATEGORYLINKS_COLS)
-    new_df.loc[new_df["cl_type"] == "'subcat'", ["cl_from", "cl_to"]].to_csv(
+    categorylinks_path = Path(
         f"local_data/{config.prefix}wiki-latest-categorylinks.csv",
-        index=False,
     )
+    if not categorylinks_path.exists():
+        new_path = Path(f"local_data/{config.prefix}wiki-latest-categorylinks.sql.gz")
+        new_real_records = read_inserts(new_path)
+        new_df = pd.DataFrame(new_real_records, columns=CATEGORYLINKS_COLS)
+        new_df.loc[new_df["cl_type"] == "'subcat'", ["cl_from", "cl_to"]].to_csv(
+            categorylinks_path,
+            index=False,
+        )
+    else:
+        logger.info("Category links already extracted")
 
-    pagepath = Path(f"local_data/{config.prefix}wiki-latest-page.sql.gz")
-    pages = read_inserts(pagepath)
-
-    CATEGORYSPACE = "14"
-    columns = ["cat_id", "cat_title"]
-    cats = [(record[0], record[2]) for record in pages if record[1] == CATEGORYSPACE]
-    catdf = pd.DataFrame(cats, columns=columns)
-    catdf.to_csv(f"local_data/{config.prefix}wiki-category-ids.csv", index=False)
-    logger.info("Done parsing SQL GZ files")
+    category_ids_path = Path(f"local_data/{config.prefix}wiki-category-ids.csv")
+    if not category_ids_path.exists():
+        pagepath = Path(f"local_data/{config.prefix}wiki-latest-page.sql.gz")
+        pages = read_inserts(pagepath)
+        CATEGORYSPACE = "14"
+        columns = ["cat_id", "cat_title"]
+        cats = [
+            (record[0], record[2]) for record in pages if record[1] == CATEGORYSPACE
+        ]
+        catdf = pd.DataFrame(cats, columns=columns)
+        catdf.to_csv(category_ids_path, index=False)
+        logger.info("Done parsing SQL GZ files")
+    else:
+        logger.info("Category IDs already extracted")
 
 
 if __name__ == "__main__":

@@ -25,9 +25,11 @@ def read_json(path: Path | str) -> dict:
     return json.loads(readpath.read_text(encoding="utf-8"))
 
 
-def find_latest_file(directory: Path, pattern: str) -> Path:
+def find_latest_file(directory: Path, pattern: str) -> Path | None:
     """Find the latest file in a directory that matches the given pattern."""
-    files = directory.glob(pattern)
+    files = list(directory.glob(pattern))
+    if not files:
+        return None
     return max(files, key=lambda f: f.stat().st_mtime)
 
 

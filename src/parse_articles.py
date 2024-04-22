@@ -145,6 +145,15 @@ def main(args: argparse.Namespace):
     CONFIG_PATH = args.config_path
     assert CONFIG_PATH.exists(), f"Config file not found at {CONFIG_PATH}"
     config: Config = Config.from_json(CONFIG_PATH)
+    if args.skip_if_exists:
+        path_to_file = fileio.find_latest_file(
+            Path("local_data"),
+            f"{config.prefix}wiki-sample-{N}-*.json",
+        )
+        if path_to_file is not None:
+            logger.info(f"File {path_to_file} already exists. Skipping extraction.")
+            return
+
     path_to_file = fileio.find_latest_file(
         Path("local_data"),
         f"{config.prefix}wiki-*-pages-articles.xml.bz2",
@@ -176,6 +185,11 @@ if __name__ == "__main__":
         "--config-path",
         type=Path,
         default=Path("da-config.json"),
+    )
+    parser.add_argument(
+        "--skip-if-exists",
+        action="store_true",
+        help="Skip extraction if a file with the same name already exists.",
     )
     args = parser.parse_args()
     main(args)
