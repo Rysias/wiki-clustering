@@ -5,6 +5,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 
+from loguru import logger
 from lxml import etree
 
 import src.fileio as fileio
@@ -148,14 +149,17 @@ def main(args: argparse.Namespace):
         Path("local_data"),
         f"{config.prefix}wiki-*-pages-articles.xml.bz2",
     )
+    logger.info(f"Extracting {N} articles from {path_to_file}")
     articles = extract_articles(path_to_file, num_articles=N, config=config)
     SAVE_PATH = Path(
         f"local_data/{config.prefix}wiki-sample-{N}-{datetime.now().strftime('%Y%m%d%H%M%S')}.json",
     )
+    logger.info(f"Saving articles to {SAVE_PATH}")
     SAVE_PATH.write_text(
         json.dumps(articles, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
+    logger.info("Done parsing articles!")
 
 
 if __name__ == "__main__":

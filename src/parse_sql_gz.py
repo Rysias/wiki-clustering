@@ -4,6 +4,7 @@ from collections.abc import Generator
 from pathlib import Path
 
 import pandas as pd
+from loguru import logger
 from tqdm import tqdm
 
 from src.config import Config
@@ -88,6 +89,7 @@ def read_inserts(path: Path) -> list[tuple]:
 
 
 def main(args: argparse.Namespace):
+    logger.info("Parsing SQL GZ files to extract category links and pages")
     config: Config = Config.from_json(args.config_path)
     new_path = Path(f"local_data/{config.prefix}wiki-latest-categorylinks.sql.gz")
     new_real_records = read_inserts(new_path)
@@ -106,6 +108,7 @@ def main(args: argparse.Namespace):
     cats = [(record[0], record[2]) for record in pages if record[1] == CATEGORYSPACE]
     catdf = pd.DataFrame(cats, columns=columns)
     catdf.to_csv(f"local_data/{config.prefix}wiki-category-ids.csv", index=False)
+    logger.info("Done parsing SQL GZ files")
 
 
 if __name__ == "__main__":

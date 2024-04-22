@@ -12,5 +12,8 @@ for config_file in language_configs/*; do
     ./run_for_lang.sh "$config_file"
 done
 
-# Run poetry run python src/upload_hf.py
+echo "Creating categories"
+poetry run python src/create_categories.py
+
+echo "Uploading to Hugging Face"
 poetry run python src/upload_hf.py

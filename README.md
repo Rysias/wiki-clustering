@@ -43,12 +43,12 @@ For convenience, there are two helper scripts for running the pipeline: [`run_fo
 - [x] gv
 - [x] sq
 - [d] ku
-- [c] sco
-- [c] mt
+- [d] sco
+- [d] mt
 - [d] bs
 - [d] ca
 - [d] eu
-- [c] wa
+- [d] wa
 - [d] cs
 - [d] ilo
 - [d] min
