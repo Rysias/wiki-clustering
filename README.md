@@ -49,3 +49,5 @@ For convenience, there are two helper scripts for running the pipeline: [`run_fo
 - [ ] eu
 - [ ] wa
 - [ ] cs
+- [ ] ilo
+- [ ] min
