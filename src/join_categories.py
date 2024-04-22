@@ -7,6 +7,10 @@ from tqdm import tqdm
 from src.config import Config
 
 
+def misinterpret(text: str, false_encoding: str = "latin1") -> str:
+    return text.encode("utf-8").decode(false_encoding)
+
+
 def get_all_parents(
     joined: pd.DataFrame,
     top_level: pd.Series,
@@ -17,7 +21,7 @@ def get_all_parents(
     orphans = joined[
         ~joined["parent"].isin(top_level) & ~joined["child"].isin(top_level)
     ]
-    for i in tqdm(range(num_levels)):
+    for _ in tqdm(range(num_levels)):
         parent_list.append(new_parents)
         new_parents = (
             orphans.merge(new_parents, how="left", left_on="parent", right_on="child")
@@ -39,7 +43,10 @@ def main(args: argparse.Namespace):
     joined = links.merge(ids, left_on="cl_from", right_on="cat_id").rename(
         columns={"cat_title": "child", "cl_to": "parent"},
     )[["child", "parent"]]
-    top_level = joined.loc[joined["parent"] == config.top_level, "child"].values
+    top_level = joined.loc[
+        joined["parent"] == misinterpret(config.top_level),
+        "child",
+    ].values
 
     all_parents = get_all_parents(joined, top_level)
     all_parents.to_csv(f"local_data/{prefix}wiki-all-parents.csv", index=False)
