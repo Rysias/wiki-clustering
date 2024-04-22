@@ -5,7 +5,6 @@ from huggingface_hub import HfApi, login
 import src.fileio as fileio
 
 DATA_DIR = Path("local_data")
-PREFIXES = ["da", "sq", "lv", "gv"]
 
 
 def upload_wiki_lang(

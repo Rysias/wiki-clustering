@@ -16,18 +16,26 @@ DOWNLOAD_PATTERNS = [
 
 
 def download_file(url: str, path: Path) -> None:
-    with requests.get(url, stream=True) as response:
-        response.raise_for_status()
-        total_size = int(response.headers.get("content-length", 0))
-        with path.open("wb") as file, tqdm(
-            total=total_size,
-            unit="B",
-            unit_scale=True,
-            desc=f"Downloading {path.name}",
-        ) as progress:
-            for chunk in response.iter_content(chunk_size=32768):
-                progress.update(len(chunk))
-                file.write(chunk)
+    try:
+        with requests.get(url, stream=True) as response:
+            response.raise_for_status()
+            total_size = int(response.headers.get("content-length", 0))
+            with path.open("wb") as file, tqdm(
+                total=total_size,
+                unit="B",
+                unit_scale=True,
+                desc=f"Downloading {path.name}",
+            ) as progress:
+                for chunk in response.iter_content(chunk_size=32768):
+                    progress.update(len(chunk))
+                    file.write(chunk)
+    except Exception as e:
+        logger.error(f"Failed to download {url}: {e}")
+        raise
+    finally:
+        if not path.is_file() or path.stat().st_size != total_size:
+            logger.error(f"Downloaded file {path.name} is incomplete. Deleting.")
+            path.unlink(missing_ok=True)
 
 
 def download_wikidump(prefix: str) -> None:

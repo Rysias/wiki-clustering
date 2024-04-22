@@ -7,8 +7,6 @@ from tqdm import tqdm
 
 import src.fileio as fileio
 
-LANGUAGES = ["da", "sq", "lv", "gv"]
-
 
 def misinterpret(text: str, false_encoding: str = "latin1") -> str:
     return text.encode("utf-8").decode(false_encoding)
@@ -126,7 +124,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--prefixes",
         nargs="+",
-        default=LANGUAGES,
+        default=fileio.get_all_prefixes(),
     )
     args = parser.parse_args()
     main(args=args)
