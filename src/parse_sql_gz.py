@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 from tqdm import tqdm
 
-import src.fileio as fileio
+from src.config import Config
 
 CATEGORYLINKS_COLS = [
     "cl_from",
@@ -88,24 +88,24 @@ def read_inserts(path: Path) -> list[tuple]:
 
 
 def main(args: argparse.Namespace):
-    config = fileio.read_json(args.config_path)
-    new_path = Path(f"local_data/{config['prefix']}wiki-latest-categorylinks.sql.gz")
+    config: Config = Config.from_json(args.config_path)
+    new_path = Path(f"local_data/{config.prefix}wiki-latest-categorylinks.sql.gz")
     new_real_records = read_inserts(new_path)
 
     new_df = pd.DataFrame(new_real_records, columns=CATEGORYLINKS_COLS)
     new_df.loc[new_df["cl_type"] == "'subcat'", ["cl_from", "cl_to"]].to_csv(
-        f"local_data/{config['prefix']}wiki-latest-categorylinks.csv",
+        f"local_data/{config.prefix}wiki-latest-categorylinks.csv",
         index=False,
     )
 
-    pagepath = Path(f"local_data/{config['prefix']}wiki-latest-page.sql.gz")
+    pagepath = Path(f"local_data/{config.prefix}wiki-latest-page.sql.gz")
     pages = read_inserts(pagepath)
 
     CATEGORYSPACE = "14"
     columns = ["cat_id", "cat_title"]
     cats = [(record[0], record[2]) for record in pages if record[1] == CATEGORYSPACE]
     catdf = pd.DataFrame(cats, columns=columns)
-    catdf.to_csv(f"local_data/{config['prefix']}wiki-category-ids.csv", index=False)
+    catdf.to_csv(f"local_data/{config.prefix}wiki-category-ids.csv", index=False)
 
 
 if __name__ == "__main__":
