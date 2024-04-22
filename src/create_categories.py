@@ -3,9 +3,12 @@ import gzip
 from pathlib import Path
 
 import pandas as pd
+from loguru import logger
 from tqdm import tqdm
 
 import src.fileio as fileio
+
+DATA_DIR = Path("local_data")
 
 
 def misinterpret(text: str, false_encoding: str = "latin1") -> str:
@@ -26,7 +29,7 @@ def clean_parents(df: pd.DataFrame) -> pd.DataFrame:
 
 def save_as_gzipped_jsonl(df: pd.DataFrame, prefix: str):
     # Create a subfolder in local_data with the name {prefix}
-    path = Path("local_data") / prefix
+    path = DATA_DIR / prefix
     path.mkdir(parents=True, exist_ok=True)
 
     # Save DataFrame as JSON Lines
@@ -104,6 +107,9 @@ def create_dataset(prefix: str, n_articles: int = 5000, n_turns: int = 30):
 
 def main(args: argparse.Namespace):
     for prefix in tqdm(args.prefixes, desc="Languages"):
+        if args.skip_if_exists and (DATA_DIR / prefix / "test.jsonl.gz").exists():
+            logger.info(f"Skipping {prefix} as it already exists")
+            continue
         create_dataset(prefix, n_articles=args.n_articles, n_turns=args.n_turns)
 
 
@@ -125,6 +131,10 @@ if __name__ == "__main__":
         "--prefixes",
         nargs="+",
         default=fileio.get_all_prefixes(),
+    )
+    parser.add_argument(
+        "--skip-if-exists",
+        action="store_true",
     )
     args = parser.parse_args()
     main(args=args)

@@ -13,7 +13,7 @@ for config_file in language_configs/*; do
 done
 
 echo "Creating categories"
-poetry run python src/create_categories.py
+poetry run python src/create_categories.py --skip-if-exists
 
 echo "Uploading to Hugging Face"
 poetry run python src/upload_hf.py
