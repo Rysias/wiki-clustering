@@ -32,7 +32,8 @@ For convenience, there are two helper scripts for running the pipeline: [`run_fo
 ### Signs
 - x: all done
 - c: config file written
-- r: download and run
+- d: downloaded
+- r: run
 - e: evaluated
 - h: uploaded and update hf
 
@@ -41,13 +42,13 @@ For convenience, there are two helper scripts for running the pipeline: [`run_fo
 - [x] lv
 - [x] gv
 - [x] sq
-- [ ] ku
-- [ ] sco
-- [ ] mt
-- [c] bs
-- [c] ca
-- [ ] eu
-- [ ] wa
-- [ ] cs
-- [ ] ilo
-- [ ] min
+- [d] ku
+- [c] sco
+- [c] mt
+- [d] bs
+- [d] ca
+- [d] eu
+- [c] wa
+- [d] cs
+- [d] ilo
+- [d] min
