@@ -27,3 +27,25 @@ For convenience, there are two helper scripts for running the pipeline: [`run_fo
 ## TODO: 
 - [x] Create a read-like file on HF a la [this one](https://huggingface.co/datasets/mteb/amazon_reviews_multi/blob/main/amazon_reviews_multi.py)
 - [x] Simple documentation on how the data was created.
+
+## Languages
+### Signs
+- x: all done
+- c: config file written
+- r: download and run
+- e: evaluated
+- h: uploaded and update hf
+
+### Languages
+- [x] da
+- [x] lv
+- [x] gv
+- [x] sq
+- [ ] ku
+- [ ] sco
+- [ ] mt
+- [ ] bs
+- [ ] ca
+- [ ] eu
+- [ ] wa
+- [ ] cs

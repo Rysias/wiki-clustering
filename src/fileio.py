@@ -4,6 +4,8 @@ from pathlib import Path
 
 import pandas as pd
 
+CONFIG_DIR = Path("language_configs")
+
 
 def read_gzipped_jsonl(prefix: str) -> pd.DataFrame:
     # Define the path to the gzipped JSON Lines file
@@ -27,3 +29,11 @@ def find_latest_file(directory: Path, pattern: str) -> Path:
     """Find the latest file in a directory that matches the given pattern."""
     files = directory.glob(pattern)
     return max(files, key=lambda f: f.stat().st_mtime)
+
+
+def get_prefix(file: Path) -> str:
+    return file.stem.split("-")[0]
+
+
+def get_all_prefixes() -> list[str]:
+    return [get_prefix(conffile) for conffile in CONFIG_DIR.glob("*.json")]
