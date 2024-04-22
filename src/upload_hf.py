@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path
 
 from huggingface_hub import HfApi, login
@@ -20,13 +21,22 @@ def upload_wiki_lang(
     )
 
 
-def main():
+def main(args: argparse.Namespace):
     login()
     api = HfApi()
-    for prefix in fileio.get_all_prefixes():
+    for prefix in args.prefixes:
         print(f"Uploading {prefix}")
         upload_wiki_lang(api, prefix=prefix)
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        description="Upload wikipedia datasets to huggingface hub",
+    )
+    parser.add_argument(
+        "--prefixes",
+        nargs="+",
+        default=fileio.get_all_prefixes(),
+    )
+    args = parser.parse_args()
+    main(args=args)
