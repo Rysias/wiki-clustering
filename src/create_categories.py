@@ -116,7 +116,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--n-articles",
         type=int,
-        default=1024,
+        default=512,
     )
     parser.add_argument(
         "--n-turns",

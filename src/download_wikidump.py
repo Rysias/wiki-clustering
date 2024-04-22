@@ -25,7 +25,7 @@ def download_file(url: str, path: Path) -> None:
             unit_scale=True,
             desc=f"Downloading {path.name}",
         ) as progress:
-            for chunk in response.iter_content(chunk_size=8192):
+            for chunk in response.iter_content(chunk_size=32768):
                 progress.update(len(chunk))
                 file.write(chunk)
 
